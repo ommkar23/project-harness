@@ -50,3 +50,8 @@ Optional variables:
 
 - `GEMINI_CHAT_MODEL_ID` overrides the model used by the chat harness.
 - `HARNESS_*` values configure the sandboxed repo execution path.
+- `TAVILY_API_KEY` enables the sandboxed repository's Tavily search helper.
+
+By default the sandbox clones the `codex/tavily-search-helper` branch of the target repo,
+which includes `tavily_search.py`. Override `HARNESS_REPO_REVISION` if you want a different
+ref.

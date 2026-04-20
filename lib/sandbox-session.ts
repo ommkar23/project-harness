@@ -183,6 +183,7 @@ async function createSandboxSession(chatId: string): Promise<{
     env: {
       PYTHONDONTWRITEBYTECODE: '1',
       PYTHONUNBUFFERED: '1',
+      ...(runtimeConfig.TAVILY_API_KEY != null ? { TAVILY_API_KEY: runtimeConfig.TAVILY_API_KEY } : {}),
     },
   });
 
@@ -236,7 +237,13 @@ export function buildSandboxSummary(): string {
     'executePython runs your code inside the prepared sandbox environment.',
     'You may use Python stdlib, installed packages, and subprocess as needed.',
     'Prefer native Python APIs over shell commands when practical.',
+    'A tavily_search.py helper is available in the repository root for web search.',
+    'Import it with `from tavily_search import search` and call `search(...)`.',
   ];
+
+  if (runtimeConfig.TAVILY_API_KEY != null) {
+    lines.push('TAVILY_API_KEY is available in the sandbox environment.');
+  }
 
   if (runtimeConfig.HARNESS_REPO_GIT_PASSWORD != null) {
     lines.push(
