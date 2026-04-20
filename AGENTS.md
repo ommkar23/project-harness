@@ -2,20 +2,13 @@
 
 ## Purpose
 
-`project-harness` is a small evaluation harness for prompt experiments using the Vercel AI SDK and Gemini.
-
-It now includes two related paths:
-
-- a benchmark-style CLI harness for prompt evaluation loops
-- a chat-backed coding harness that executes inline Python inside Vercel Sandbox against a target Git repository
+`project-harness` is a chat-backed coding harness using the Vercel AI SDK, Gemini, and Vercel Sandbox.
 
 The project exists to:
 
-- run benchmark cases against prompt variants
-- score outputs using deterministic checks
-- feed evaluation failures back into a prompt-improvement loop
-- stop when scores stop improving or the loop reaches its cap
-- persist run artifacts for later inspection
+- execute repo-aware coding tasks inside a sandboxed Python environment
+- keep the tool surface narrow and intentional
+- preserve telemetry for chat and sandbox execution
 
 ## Scope
 
@@ -23,13 +16,9 @@ This folder is intentionally narrow in scope.
 
 Keep work here focused on:
 
-- evaluation harness behavior
 - chat harness behavior
 - Vercel sandbox execution flow
-- prompt optimization flow
 - model/provider configuration
-- scoring logic
-- run outputs and summaries
 - high-level documentation for the harness
 
 Do not use this folder as a general product repo, website, or research dump.
@@ -37,23 +26,13 @@ Do not use this folder as a general product repo, website, or research dump.
 ## Structure
 
 - `src/`
-  TypeScript source for the benchmark harness and shared Node-emitted modules. Compiled by `tsc` with `moduleResolution: NodeNext` — all internal imports must use explicit `.js` extensions.
+  TypeScript source for shared Node-emitted modules. Compiled by `tsc` with `moduleResolution: NodeNext` — all internal imports must use explicit `.js` extensions.
 - `lib/`
   Next.js/server runtime modules for the chat-backed sandbox harness. Bundled by Next.js/Turbopack with `moduleResolution: Bundler` — no `.js` extensions on imports.
 - `app/`
   Next.js app router UI and API routes
-- `src/dataset.ts`
-  benchmark cases and expected checks
-- `src/prompts.ts`
-  seed prompt variants and prompt metadata
 - `src/models.ts`
   model/provider configuration
-- `src/scorers.ts`
-  deterministic evaluation logic
-- `src/harness.ts`
-  orchestration, evaluation loop, and prompt refinement loop
-- `src/cli.ts`
-  command-line entry point
 - `lib/chat-harness.ts`
   chat route orchestration — message filtering, tool registration, streamText
 - `lib/sandbox-session.ts`
@@ -67,9 +46,7 @@ Do not use this folder as a general product repo, website, or research dump.
 - `instrumentation.node.ts`
   Node-only OTel provider bootstrap — registers `BraintrustSpanProcessor`
 - `dist/`
-  compiled output and run artifacts
-- `dist/runs/`
-  JSON outputs from harness runs
+  compiled output from the current source tree
 - `README.md`
   quick usage notes
 - `hld-overview.html`
@@ -94,10 +71,7 @@ Do not use this folder as a general product repo, website, or research dump.
 
 - prefer small, reviewable edits
 - keep the harness simple unless the user asks for broader platform features
-- preserve the current HLD direction: benchmark -> score -> improve -> rerun
 - avoid adding framework or UI complexity unless explicitly requested
-- prefer deterministic scorers first; add judge-style evaluation only when needed
-- do not silently change the evaluation objective or benchmark semantics
 - for the chat harness, keep the tool surface intentionally narrow
 
 ## Verification
@@ -107,24 +81,16 @@ After code changes, run:
 - `pnpm build`
 - `pnpm lint`
 
-If behavior changes materially and credentials are available, also run:
-
-- `pnpm run run`
-
 Report whether:
 
 - build passed
 - lint passed
-- a live harness run was executed
-- a new run artifact was produced
 - a sandbox create/clone smoke test was executed when sandbox behavior changed
 
 ## Output Conventions
 
-- keep run artifacts as separate JSON files under `dist/runs/`
-- prefer additive run history over overwriting prior results
+- keep chat output focused on the current task and sandbox response
 - keep summaries easy to scan
-- expose stop reason and completed iteration count in outputs
 
 For the chat harness:
 
@@ -162,8 +128,6 @@ For the chat harness:
 
 Reasonable future additions for this project include:
 
-- external dataset loading
-- richer scoring dimensions
 - human review hooks
 - multi-model comparisons
 - experiment metadata and diffing

@@ -9,7 +9,6 @@
     "build:web": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "run": "node --enable-source-maps dist/cli.js",
     "start": "next start"
   },
   "dependencies": {

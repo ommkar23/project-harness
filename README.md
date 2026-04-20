@@ -1,6 +1,6 @@
 # project-harness
 
-Minimal evaluation harness built with the Vercel AI SDK.
+Chat-backed sandbox harness built with the Vercel AI SDK and Vercel Sandbox.
 
 ## Quick start
 
@@ -9,26 +9,16 @@ pnpm install
 cp .env.example .env
 pnpm build
 pnpm lint
-pnpm run
+pnpm dev
 ```
 
 ## What it does
 
-- loads a small in-code dataset
-- runs each test case against the configured Gemini model
-- applies deterministic scorers
-- feeds failed evaluation results back into a prompt-improvement loop
-- stops when the score no longer improves or after 5 iterations
-- writes JSON results to `dist/runs/`
-
-## Chat harness
-
-The repo now includes a first-pass Next.js chat surface backed by AI SDK 6 and Vercel
-Sandbox.
-
-```bash
-pnpm dev
-```
+- exposes a Next.js chat UI backed by AI SDK 6
+- routes chat requests through a single `executePython` tool
+- runs repo interaction inside a Vercel Sandbox
+- clones the configured repository revision into the sandbox
+- keeps sandbox output in the chat stream instead of writing run artifacts
 
 Open `http://localhost:3000` and send a request. The route in
 [app/api/chat/route.ts](/Users/ommkar/dev/markagen/project-harness/app/api/chat/route.ts)
@@ -54,11 +44,9 @@ Before running the chat harness locally:
 
 ## Environment
 
-Set `GEMINI_API_KEY` in `.env` before running the harness.
+Set `GEMINI_API_KEY` in `.env` before running the chat harness.
 
 Optional variables:
 
-- `GEMINI_MODEL_ID` sets the default evaluation model.
 - `GEMINI_CHAT_MODEL_ID` overrides the model used by the chat harness.
 - `HARNESS_*` values configure the sandboxed repo execution path.
-# harness-playground

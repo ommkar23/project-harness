@@ -236,12 +236,12 @@
     <main class="page">
       <section class="hero">
         <span class="eyebrow">High-Level Design</span>
-        <h1>Project Harness: Evaluation and Prompt Improvement System</h1>
+        <h1>Project Harness: Chat-Backed Sandbox Coding System</h1>
         <p>
-          This project is a lightweight evaluation harness for prompt experiments. Its job is
-          to test prompt behavior against a small benchmark, score the results, and use the
-          evaluation feedback to refine the prompt until quality improves or a fixed loop limit
-          is reached.
+          This project is a lightweight chat harness for sandboxed repository work. Its job is
+          to let the model inspect and change a target Git repository through inline Python
+          executed inside Vercel Sandbox, while keeping the interaction stream visible in the
+          Next.js UI.
         </p>
       </section>
 
@@ -250,22 +250,22 @@
         <article class="card">
           <h3>Primary Goal</h3>
           <p>
-            Create a controlled environment for measuring prompt quality instead of relying on
-            intuition or one-off manual testing.
+            Provide a controlled environment for repository-aware coding tasks without giving
+            the model unrestricted host access.
           </p>
         </article>
         <article class="card">
           <h3>Current Use Case</h3>
           <p>
-            Evaluate startup-headline generation for brevity, required language, and banned
-            language across multiple prompt candidates.
+            Answer user requests by running Python against a cloned repository, then stream the
+            result back through the chat UI.
           </p>
         </article>
         <article class="card">
           <h3>Operating Model</h3>
           <p>
-            Run a benchmark, score outputs, identify failures, generate a better prompt, and
-            repeat within a capped optimization loop.
+            Accept a chat message, convert it into model context, execute a narrow server-side
+            tool when needed, and reuse the sandbox for the life of the chat session.
           </p>
         </article>
       </section>
@@ -276,13 +276,13 @@
           <div class="layer-head">
             <div>
               <div class="layer-tag">Input Layer</div>
-              <h3>Benchmark and Prompt Seeds</h3>
+              <h3>Chat Messages and Repo Context</h3>
             </div>
           </div>
           <div class="chips">
-            <span class="chip">Evaluation cases</span>
-            <span class="chip">Initial prompt variants</span>
-            <span class="chip">Scoring expectations</span>
+            <span class="chip">UI messages</span>
+            <span class="chip">Sandbox summary prompt</span>
+            <span class="chip">Repository revision</span>
           </div>
         </article>
 
@@ -290,43 +290,41 @@
           <div class="layer-head">
             <div>
               <div class="layer-tag">Execution Layer</div>
-              <h3>Gemini-Based Generation Engine</h3>
+              <h3>Gemini Chat Model</h3>
             </div>
           </div>
           <div class="chips">
-            <span class="chip">Gemini model invocation</span>
-            <span class="chip">Retry handling</span>
-            <span class="chip">Telemetry-enabled runs</span>
+            <span class="chip">AI SDK streamText</span>
+            <span class="chip">Telemetry-enabled calls</span>
+            <span class="chip">Tool-aware response streaming</span>
           </div>
         </article>
 
         <article class="layer">
           <div class="layer-head">
             <div>
-              <div class="layer-tag">Evaluation Layer</div>
-              <h3>Deterministic Scoring</h3>
+              <div class="layer-tag">Tool Layer</div>
+              <h3>Inline Python Execution</h3>
             </div>
           </div>
           <div class="chips">
-            <span class="chip">Required phrase checks</span>
-            <span class="chip">Banned phrase checks</span>
-            <span class="chip">Length checks</span>
-            <span class="chip">Pass rate and average score</span>
+            <span class="chip">Single `executePython` tool</span>
+            <span class="chip">Temp script creation</span>
+            <span class="chip">Repo file edits and tests</span>
           </div>
         </article>
 
         <article class="layer">
           <div class="layer-head">
             <div>
-              <div class="layer-tag">Optimization Layer</div>
-              <h3>Closed-Loop Prompt Refinement</h3>
+              <div class="layer-tag">Sandbox Layer</div>
+              <h3>Per-Chat Repository Session</h3>
             </div>
           </div>
           <div class="chips">
-            <span class="chip">Failure summary</span>
-            <span class="chip">Prompt rewrite proposal</span>
-            <span class="chip">Best-so-far tracking</span>
-            <span class="chip">Maximum 5 iterations</span>
+            <span class="chip">Lazy sandbox creation</span>
+            <span class="chip">Clone on first use</span>
+            <span class="chip">In-memory reuse while server lives</span>
           </div>
         </article>
 
@@ -334,14 +332,13 @@
           <div class="layer-head">
             <div>
               <div class="layer-tag">Output Layer</div>
-              <h3>Run Artifacts and Summary</h3>
+              <h3>Chat Response Stream</h3>
             </div>
           </div>
           <div class="chips">
-            <span class="chip">Per-run JSON artifact</span>
-            <span class="chip">Prompt leaderboard</span>
-            <span class="chip">Stop reason</span>
-            <span class="chip">Iteration count</span>
+            <span class="chip">UI message stream</span>
+            <span class="chip">Tool output embedded in chat</span>
+            <span class="chip">No run-artifact persistence</span>
           </div>
         </article>
       </section>
@@ -351,50 +348,50 @@
         <article class="flow-step">
           <div class="flow-num">1</div>
           <div>
-            <h3>Seed Evaluation</h3>
+            <h3>User Request</h3>
             <p>
-              The harness begins with the current prompt candidates and runs the benchmark set
-              against Gemini.
+              The user describes a repository task in the chat UI and the browser posts the
+              message to the chat route.
             </p>
           </div>
         </article>
         <article class="flow-step">
           <div class="flow-num">2</div>
           <div>
-            <h3>Score Aggregation</h3>
+            <h3>Model Context Build</h3>
             <p>
-              Each output is evaluated using fixed rules. The system calculates pass counts and
-              average scores to establish a ranked view of prompt quality.
+              The route strips completed tool parts, converts the conversation to model
+              messages, and prepends the sandbox summary.
             </p>
           </div>
         </article>
         <article class="flow-step">
           <div class="flow-num">3</div>
           <div>
-            <h3>Failure Compression</h3>
+            <h3>Tool Execution</h3>
             <p>
-              Failed cases are summarized into a compact explanation of what went wrong, such as
-              excessive verbosity or missing required language.
+              When the model needs repo access, it calls `executePython`, which runs a temp
+              Python file inside the sandbox and returns stdout, stderr, and exit status.
             </p>
           </div>
         </article>
         <article class="flow-step">
           <div class="flow-num">4</div>
           <div>
-            <h3>Prompt Improvement</h3>
+            <h3>Sandbox Reuse</h3>
             <p>
-              Gemini receives the evaluation feedback and proposes a revised system prompt aimed
-              at improving the next evaluation round.
+              The session store keeps the sandbox id in memory so later messages in the same chat
+              can continue from the same repository state while the server stays up.
             </p>
           </div>
         </article>
         <article class="flow-step">
           <div class="flow-num">5</div>
           <div>
-            <h3>Loop Control</h3>
+            <h3>UI Streaming</h3>
             <p>
-              The new prompt is re-evaluated. The loop stops when quality no longer improves or
-              when the maximum of 5 iterations is reached.
+              The response is streamed back as AI SDK UI messages, so text answers and tool
+              output stay in the same conversation.
             </p>
           </div>
         </article>
@@ -405,21 +402,21 @@
         <article class="card">
           <h3>What It Covers Today</h3>
           <ul>
-            <li>Single-task prompt evaluation</li>
-            <li>Single-provider Gemini execution</li>
-            <li>Deterministic scoring</li>
-            <li>Prompt self-improvement loop</li>
-            <li>Stored run artifacts for later inspection</li>
+            <li>Sandboxed repository access through inline Python</li>
+            <li>Single-tool chat orchestration</li>
+            <li>Gemini-backed response generation</li>
+            <li>Per-chat sandbox reuse while the process lives</li>
+            <li>Braintrust telemetry for chat and execution traces</li>
           </ul>
         </article>
         <article class="card">
           <h3>What It Does Not Cover Yet</h3>
           <ul>
-            <li>Human review workflows</li>
-            <li>Tool-using agents or agent trajectory evaluation</li>
-            <li>Multi-provider routing and comparison</li>
-            <li>Dashboarding or persistent experiment database</li>
+            <li>Persistent sandbox sessions across server restarts</li>
+            <li>Multi-tool or multi-agent workflows</li>
+            <li>Persistent chat memory outside the current session</li>
             <li>Production orchestration or scheduling</li>
+            <li>General-purpose model routing or provider comparison</li>
           </ul>
         </article>
       </section>
@@ -427,9 +424,9 @@
       <h2 class="section-title">Design Summary</h2>
       <section class="card">
         <p class="note">
-          In HLD terms, this is a closed-loop prompt evaluation system. The core value is not
-          raw model access, but the ability to benchmark outputs, identify failure patterns,
-          improve prompts systematically, and stop with a measurable best-so-far result.
+          In HLD terms, this is a narrow chat-and-sandbox system. The core value is not raw
+          model access, but the ability to safely execute repository work through a controlled
+          tool surface and keep the interaction visible in the conversation.
         </p>
         <p class="footer">
           This page intentionally avoids implementation details and code structure. It is meant

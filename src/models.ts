@@ -28,18 +28,6 @@ export function getDefaultModelId(): string {
   return process.env.GEMINI_MODEL_ID?.trim() || DEFAULT_MODEL_ID;
 }
 
-export function getModels(): HarnessModel[] {
-  const google = createGoogleProvider();
-  const modelId = getDefaultModelId();
-
-  return [
-    {
-      id: modelId,
-      model: google(modelId),
-    },
-  ];
-}
-
 export function getDefaultChatModel(): HarnessModel {
   const google = createGoogleProvider();
   const modelId =
