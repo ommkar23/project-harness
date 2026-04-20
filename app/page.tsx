@@ -18,6 +18,101 @@ function getMessageText(message: UIMessage): string {
     .join('\n');
 }
 
+type ExecutePythonToolPart = Extract<UIMessage['parts'][number], { type: `tool-${string}` }> & {
+  type: 'tool-executePython';
+};
+
+function isExecutePythonToolPart(part: UIMessage['parts'][number]): part is ExecutePythonToolPart {
+  return part.type === 'tool-executePython';
+}
+
+function stringifyValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  const json = JSON.stringify(value, null, 2);
+
+  return json ?? String(value);
+}
+
+function extractCode(input: unknown): string {
+  if (typeof input === 'object' && input != null && 'code' in input) {
+    const value = (input as { code?: unknown }).code;
+
+    if (typeof value === 'string') {
+      return value;
+    }
+  }
+
+  return stringifyValue(input);
+}
+
+function formatSandboxOutput(output: unknown): string {
+  if (typeof output === 'object' && output != null) {
+    const record = output as {
+      stderr?: unknown;
+      stdout?: unknown;
+    };
+
+    if (typeof record.stdout === 'string' && typeof record.stderr === 'string') {
+      const sections = [record.stdout, record.stderr]
+        .map((value) => value.trimEnd())
+        .filter((value) => value.length > 0);
+
+      return sections.length > 0 ? sections.join('\n') : '[empty]';
+    }
+  }
+
+  return stringifyValue(output);
+}
+
+function renderToolPart(part: ExecutePythonToolPart): ReactElement {
+  const codeStatus = part.state === 'input-streaming' ? 'streaming' : 'ready';
+
+  return (
+    <>
+      <details className="toolCard">
+        <summary className="toolSummary">
+          <span className="toolSummaryTitle">Python code</span>
+          <span className="toolPill">{codeStatus}</span>
+        </summary>
+        <pre className="toolCode">{extractCode(part.input)}</pre>
+      </details>
+
+      {part.state === 'output-available' ? (
+        <details className="toolCard toolCardOutput">
+          <summary className="toolSummary">
+            <span className="toolSummaryTitle">Code output</span>
+            <span className="toolPill">done</span>
+          </summary>
+          <pre className="toolCode">{formatSandboxOutput(part.output)}</pre>
+        </details>
+      ) : null}
+
+      {part.state === 'output-error' ? (
+        <details className="toolCard toolCardOutput">
+          <summary className="toolSummary">
+            <span className="toolSummaryTitle">Code output</span>
+            <span className="toolPill toolPillError">error</span>
+          </summary>
+          <pre className="toolCode">{part.errorText}</pre>
+        </details>
+      ) : null}
+
+      {part.state === 'output-denied' ? (
+        <details className="toolCard toolCardOutput">
+          <summary className="toolSummary">
+            <span className="toolSummaryTitle">Code output</span>
+            <span className="toolPill toolPillError">denied</span>
+          </summary>
+          <pre className="toolCode">Execution denied.</pre>
+        </details>
+      ) : null}
+    </>
+  );
+}
+
 export default function HomePage(): ReactElement {
   const [input, setInput] = useState('');
 
@@ -45,7 +140,8 @@ export default function HomePage(): ReactElement {
         <h1>Chat-backed repo execution with Python inside Vercel Sandbox</h1>
         <p className="lede">
           The assistant can answer directly or execute inline Python in an isolated sandbox that
-          pulls the configured GitHub repository.
+          pulls the configured GitHub repository. Python code and sandbox output appear as
+          collapsible steps in the chat stream.
         </p>
       </section>
 
@@ -67,6 +163,11 @@ export default function HomePage(): ReactElement {
               >
                 <div className="messageMeta">{message.role === 'user' ? 'User' : 'Harness'}</div>
                 <pre className="messageText">{text.length > 0 ? text : '[non-text response]'}</pre>
+                {message.parts
+                  .filter(isExecutePythonToolPart)
+                  .map((part) => (
+                    <div key={part.toolCallId}>{renderToolPart(part)}</div>
+                  ))}
               </article>
             );
           })}

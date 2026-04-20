@@ -9,6 +9,7 @@ The project exists to:
 - execute repo-aware coding tasks inside a sandboxed Python environment
 - keep the tool surface narrow and intentional
 - preserve telemetry for chat and sandbox execution
+- support repo-local helper modules such as Tavily web search when present in the cloned target repo
 
 ## Scope
 
@@ -17,6 +18,7 @@ This folder is intentionally narrow in scope.
 Keep work here focused on:
 
 - chat harness behavior
+- chat UI presentation for tool inputs and sandbox outputs
 - Vercel sandbox execution flow
 - model/provider configuration
 - high-level documentation for the harness
@@ -64,8 +66,10 @@ Do not use this folder as a general product repo, website, or research dump.
 - for private repositories, set `HARNESS_REPO_GIT_PASSWORD=<github-pat>`; the username is always `x-access-token` (hardcoded per GitHub PAT convention)
 - credentials are passed as `source.username`/`source.password` in `Sandbox.create` for the initial clone, and written to `~/.netrc` inside the sandbox for subsequent git operations
 - the PAT is NOT forwarded as an env var into the sandbox
+- `TAVILY_API_KEY` is forwarded into the sandbox env when present so repo-local Tavily helpers can use it directly
 - local sandbox work assumes Vercel CLI auth and a linked local project
 - the current public target repo used in this session is `ommkar23/harness-playground`
+- the default revision is `codex/tavily-search-helper` unless `HARNESS_REPO_REVISION` overrides it
 
 ## Change Rules
 
@@ -94,6 +98,9 @@ Report whether:
 
 For the chat harness:
 
+- render `executePython` activity inline in the chat stream rather than in a separate context sidebar
+- show Python tool input and sandbox output as separate sequential UI elements
+- keep Python code and code output collapsed by default when rendered as tool UI blocks
 - do not add a custom context viewer — runtime tracing goes to Braintrust via `experimental_telemetry`
 
 ## Chat Harness
@@ -105,6 +112,7 @@ For the chat harness:
 - prefer native Python APIs before using `subprocess`
 - `subprocess` is allowed for git, installs, tests, and other command-oriented tasks
 - the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, and whether git is pre-authenticated
+- the system prompt should also advertise repo-local helper modules present in the cloned target repo, such as `tavily_search.py`
 - the harness owns context filtering and ordering before conversion to model messages
 - the carry-forward model context keeps user text, assistant text, and completed `executePython` outputs
 - raw tool-call inputs are not carried forward into the next-turn model context
