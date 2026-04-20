@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project Harness HLD</title>
+    <style>
+      :root {
+        --bg: #f5efe4;
+        --panel: rgba(255, 251, 245, 0.82);
+        --panel-strong: #fffaf2;
+        --text: #1e1a16;
+        --muted: #5f564d;
+        --line: rgba(64, 49, 35, 0.14);
+        --accent: #b44f2d;
+        --accent-soft: #f2d1c4;
+        --accent-2: #2f6b5f;
+        --accent-3: #a4862f;
+        --shadow: 0 18px 40px rgba(58, 42, 26, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(180, 79, 45, 0.16), transparent 28%),
+          radial-gradient(circle at top right, rgba(47, 107, 95, 0.14), transparent 30%),
+          linear-gradient(180deg, #fbf5ea 0%, var(--bg) 100%);
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 20px 72px;
+      }
+
+      .hero {
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(255, 250, 242, 0.92), rgba(247, 239, 227, 0.9));
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-weight: 600;
+      }
+
+      h1 {
+        margin-top: 16px;
+        font-size: clamp(2.4rem, 5vw, 4.6rem);
+        line-height: 0.95;
+        max-width: 760px;
+      }
+
+      .hero p {
+        margin: 20px 0 0;
+        max-width: 720px;
+        font-size: 1.06rem;
+        line-height: 1.65;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+        margin-top: 24px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .card {
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+      }
+
+      .card h2,
+      .card h3 {
+        margin-bottom: 12px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .section-title {
+        margin-top: 42px;
+        margin-bottom: 16px;
+        font-size: 1.55rem;
+      }
+
+      .architecture {
+        display: grid;
+        gap: 18px;
+      }
+
+      .layer {
+        padding: 20px;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+      }
+
+      .layer-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .layer-tag {
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .chip {
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: #f8f0e6;
+        border: 1px solid var(--line);
+        font-size: 0.92rem;
+      }
+
+      .flow {
+        display: grid;
+        gap: 14px;
+      }
+
+      .flow-step {
+        display: grid;
+        grid-template-columns: 62px 1fr;
+        gap: 16px;
+        align-items: start;
+        padding: 18px;
+        border-radius: 20px;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+      }
+
+      .flow-num {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        font-size: 1.2rem;
+        color: white;
+        background: linear-gradient(135deg, var(--accent), #d67f5f);
+      }
+
+      .flow-step:nth-child(2) .flow-num {
+        background: linear-gradient(135deg, var(--accent-2), #4d8b7e);
+      }
+
+      .flow-step:nth-child(3) .flow-num {
+        background: linear-gradient(135deg, var(--accent-3), #c0a44a);
+      }
+
+      .flow-step:nth-child(4) .flow-num,
+      .flow-step:nth-child(5) .flow-num {
+        background: linear-gradient(135deg, #6c4b91, #9168c4);
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .note {
+        border-left: 4px solid var(--accent);
+        padding: 14px 16px;
+        background: rgba(180, 79, 45, 0.06);
+        border-radius: 0 16px 16px 0;
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 32px;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      @media (max-width: 900px) {
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-step {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <span class="eyebrow">High-Level Design</span>
+        <h1>Project Harness: Evaluation and Prompt Improvement System</h1>
+        <p>
+          This project is a lightweight evaluation harness for prompt experiments. Its job is
+          to test prompt behavior against a small benchmark, score the results, and use the
+          evaluation feedback to refine the prompt until quality improves or a fixed loop limit
+          is reached.
+        </p>
+      </section>
+
+      <h2 class="section-title">System Intent</h2>
+      <section class="grid three">
+        <article class="card">
+          <h3>Primary Goal</h3>
+          <p>
+            Create a controlled environment for measuring prompt quality instead of relying on
+            intuition or one-off manual testing.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Current Use Case</h3>
+          <p>
+            Evaluate startup-headline generation for brevity, required language, and banned
+            language across multiple prompt candidates.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Operating Model</h3>
+          <p>
+            Run a benchmark, score outputs, identify failures, generate a better prompt, and
+            repeat within a capped optimization loop.
+          </p>
+        </article>
+      </section>
+
+      <h2 class="section-title">Architecture</h2>
+      <section class="architecture">
+        <article class="layer">
+          <div class="layer-head">
+            <div>
+              <div class="layer-tag">Input Layer</div>
+              <h3>Benchmark and Prompt Seeds</h3>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip">Evaluation cases</span>
+            <span class="chip">Initial prompt variants</span>
+            <span class="chip">Scoring expectations</span>
+          </div>
+        </article>
+
+        <article class="layer">
+          <div class="layer-head">
+            <div>
+              <div class="layer-tag">Execution Layer</div>
+              <h3>Gemini-Based Generation Engine</h3>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip">Gemini model invocation</span>
+            <span class="chip">Retry handling</span>
+            <span class="chip">Telemetry-enabled runs</span>
+          </div>
+        </article>
+
+        <article class="layer">
+          <div class="layer-head">
+            <div>
+              <div class="layer-tag">Evaluation Layer</div>
+              <h3>Deterministic Scoring</h3>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip">Required phrase checks</span>
+            <span class="chip">Banned phrase checks</span>
+            <span class="chip">Length checks</span>
+            <span class="chip">Pass rate and average score</span>
+          </div>
+        </article>
+
+        <article class="layer">
+          <div class="layer-head">
+            <div>
+              <div class="layer-tag">Optimization Layer</div>
+              <h3>Closed-Loop Prompt Refinement</h3>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip">Failure summary</span>
+            <span class="chip">Prompt rewrite proposal</span>
+            <span class="chip">Best-so-far tracking</span>
+            <span class="chip">Maximum 5 iterations</span>
+          </div>
+        </article>
+
+        <article class="layer">
+          <div class="layer-head">
+            <div>
+              <div class="layer-tag">Output Layer</div>
+              <h3>Run Artifacts and Summary</h3>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="chip">Per-run JSON artifact</span>
+            <span class="chip">Prompt leaderboard</span>
+            <span class="chip">Stop reason</span>
+            <span class="chip">Iteration count</span>
+          </div>
+        </article>
+      </section>
+
+      <h2 class="section-title">Execution Flow</h2>
+      <section class="flow">
+        <article class="flow-step">
+          <div class="flow-num">1</div>
+          <div>
+            <h3>Seed Evaluation</h3>
+            <p>
+              The harness begins with the current prompt candidates and runs the benchmark set
+              against Gemini.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">2</div>
+          <div>
+            <h3>Score Aggregation</h3>
+            <p>
+              Each output is evaluated using fixed rules. The system calculates pass counts and
+              average scores to establish a ranked view of prompt quality.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">3</div>
+          <div>
+            <h3>Failure Compression</h3>
+            <p>
+              Failed cases are summarized into a compact explanation of what went wrong, such as
+              excessive verbosity or missing required language.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">4</div>
+          <div>
+            <h3>Prompt Improvement</h3>
+            <p>
+              Gemini receives the evaluation feedback and proposes a revised system prompt aimed
+              at improving the next evaluation round.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">5</div>
+          <div>
+            <h3>Loop Control</h3>
+            <p>
+              The new prompt is re-evaluated. The loop stops when quality no longer improves or
+              when the maximum of 5 iterations is reached.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <h2 class="section-title">Current Boundaries</h2>
+      <section class="grid two">
+        <article class="card">
+          <h3>What It Covers Today</h3>
+          <ul>
+            <li>Single-task prompt evaluation</li>
+            <li>Single-provider Gemini execution</li>
+            <li>Deterministic scoring</li>
+            <li>Prompt self-improvement loop</li>
+            <li>Stored run artifacts for later inspection</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>What It Does Not Cover Yet</h3>
+          <ul>
+            <li>Human review workflows</li>
+            <li>Tool-using agents or agent trajectory evaluation</li>
+            <li>Multi-provider routing and comparison</li>
+            <li>Dashboarding or persistent experiment database</li>
+            <li>Production orchestration or scheduling</li>
+          </ul>
+        </article>
+      </section>
+
+      <h2 class="section-title">Design Summary</h2>
+      <section class="card">
+        <p class="note">
+          In HLD terms, this is a closed-loop prompt evaluation system. The core value is not
+          raw model access, but the ability to benchmark outputs, identify failure patterns,
+          improve prompts systematically, and stop with a measurable best-so-far result.
+        </p>
+        <p class="footer">
+          This page intentionally avoids implementation details and code structure. It is meant
+          to explain the system as a product and architecture concept.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

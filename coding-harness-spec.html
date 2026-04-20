@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coding Harness Spec</title>
+    <style>
+      :root {
+        --bg: #f7f4ee;
+        --panel: rgba(255, 252, 247, 0.92);
+        --panel-strong: #fffdf9;
+        --text: #1f1a14;
+        --muted: #5e554d;
+        --line: rgba(73, 57, 42, 0.14);
+        --accent: #aa4f2d;
+        --accent-soft: #f1d6ca;
+        --accent-2: #2f675a;
+        --accent-3: #8a6a1f;
+        --shadow: 0 20px 44px rgba(60, 45, 28, 0.1);
+        --font-size: 17px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        font-size: var(--font-size);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: Georgia, "Times New Roman", serif;
+        background:
+          radial-gradient(circle at top left, rgba(170, 79, 45, 0.12), transparent 28%),
+          radial-gradient(circle at top right, rgba(47, 103, 90, 0.12), transparent 26%),
+          linear-gradient(180deg, #fcf8f1 0%, var(--bg) 100%);
+      }
+
+      .page {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 32px 20px 72px;
+      }
+
+      .hero,
+      .card,
+      .flow-step,
+      .table-wrap,
+      .note {
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+      }
+
+      .hero {
+        padding: 32px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(255, 252, 247, 0.96), rgba(247, 240, 230, 0.92));
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-weight: 600;
+      }
+
+      h1 {
+        margin-top: 16px;
+        max-width: 760px;
+        font-size: clamp(2.4rem, 5vw, 4.4rem);
+        line-height: 0.95;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.06rem;
+      }
+
+      p,
+      li,
+      td,
+      th {
+        line-height: 1.65;
+      }
+
+      .hero p,
+      .card p,
+      .flow-copy p,
+      .note,
+      td,
+      li {
+        color: var(--muted);
+      }
+
+      .hero p {
+        margin: 18px 0 0;
+        max-width: 760px;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+      }
+
+      .slider-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: min(100%, 320px);
+      }
+
+      .slider-wrap label,
+      .slider-wrap output {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      input[type="range"] {
+        width: 180px;
+        accent-color: var(--accent);
+      }
+
+      .section-title {
+        margin: 42px 0 16px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .card {
+        padding: 24px;
+        border-radius: 24px;
+        background: var(--panel);
+        backdrop-filter: blur(10px);
+      }
+
+      .card h3 {
+        margin-bottom: 10px;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        padding: 9px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #f7f0e7;
+        font-size: 0.88rem;
+      }
+
+      .flow {
+        display: grid;
+        gap: 14px;
+      }
+
+      .flow-step {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 16px;
+        padding: 20px;
+        border-radius: 22px;
+        background: var(--panel-strong);
+      }
+
+      .flow-num {
+        width: 64px;
+        height: 64px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        color: #fff;
+        font-size: 1.2rem;
+        background: linear-gradient(135deg, var(--accent), #d58264);
+      }
+
+      .flow-step:nth-child(2) .flow-num,
+      .flow-step:nth-child(5) .flow-num {
+        background: linear-gradient(135deg, var(--accent-2), #4d8c7d);
+      }
+
+      .flow-step:nth-child(3) .flow-num,
+      .flow-step:nth-child(6) .flow-num {
+        background: linear-gradient(135deg, var(--accent-3), #bc9b43);
+      }
+
+      .flow-copy h3 {
+        margin-bottom: 8px;
+      }
+
+      .flow-copy p {
+        margin: 0;
+      }
+
+      .arch {
+        display: grid;
+        gap: 18px;
+      }
+
+      .arch-row {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1.05fr 1.3fr 1fr;
+        align-items: stretch;
+      }
+
+      .arch-card {
+        padding: 22px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        box-shadow: var(--shadow);
+      }
+
+      .arch-card h3 {
+        margin-bottom: 10px;
+      }
+
+      .arch-card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .arch-card.system {
+        border-style: dashed;
+      }
+
+      .arch-card.core {
+        background: linear-gradient(135deg, rgba(255, 252, 247, 0.98), rgba(244, 237, 228, 0.95));
+      }
+
+      .arch-stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .arch-center {
+        display: grid;
+        gap: 16px;
+      }
+
+      .arch-band {
+        padding: 16px 18px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background: rgba(241, 214, 202, 0.28);
+      }
+
+      .arch-band strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .arch-band p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .table-wrap {
+        overflow: auto;
+        border-radius: 24px;
+        background: var(--panel);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 16px 18px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--line);
+      }
+
+      th {
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: rgba(241, 214, 202, 0.45);
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .note {
+        padding: 18px 20px;
+        border-radius: 22px;
+        background: rgba(47, 103, 90, 0.07);
+      }
+
+      .footer {
+        margin-top: 28px;
+        font-size: 0.94rem;
+        color: var(--muted);
+      }
+
+      code {
+        padding: 0.08rem 0.28rem;
+        border-radius: 0.35rem;
+        background: rgba(73, 57, 42, 0.08);
+        font-size: 0.92em;
+      }
+
+      @media (max-width: 920px) {
+        .grid.two,
+        .grid.three,
+        .flow-step,
+        .arch-row {
+          grid-template-columns: 1fr;
+        }
+
+        .toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <span class="eyebrow">Review Spec</span>
+        <h1>Sandboxed Coding Harness With Two Tools</h1>
+        <p>
+          This spec defines a coding harness that evaluates an agent inside a Vercel sandbox
+          with a deliberately narrow interface. The agent has only two tools: <code>text</code>
+          for user-facing messages and <code>executePython</code> for all work. Every file read,
+          edit, search, install, test run, and repo operation happens through Python running in
+          the sandbox.
+        </p>
+        <div class="toolbar">
+          <div class="chips">
+            <span class="chip">Vercel Sandbox</span>
+            <span class="chip">Two-Tool Agent</span>
+            <span class="chip">Append-Only Context</span>
+            <span class="chip">Python-First Operations</span>
+          </div>
+          <div class="slider-wrap">
+            <label for="font-slider">Font size</label>
+            <input id="font-slider" type="range" min="15" max="22" value="17" />
+            <output id="font-output" for="font-slider">17px</output>
+          </div>
+        </div>
+      </section>
+
+      <h2 class="section-title">Goals</h2>
+      <section class="grid three">
+        <article class="card">
+          <h3>Constrain the Agent</h3>
+          <p>
+            Make the execution surface easy to reason about by exposing only one working tool
+            and one communication tool.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Run Safely</h3>
+          <p>
+            Execute generated code inside an isolated sandbox that contains the repo checkout
+            and a prepared Python runtime.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Log Everything</h3>
+          <p>
+            Persist a complete append-only record of prompts, tool calls, tool results, and
+            terminal outcomes for later inspection and scoring.
+          </p>
+        </article>
+      </section>
+
+      <h2 class="section-title">Architecture Review</h2>
+      <section class="grid three">
+        <article class="card">
+          <h3>What works</h3>
+          <p>
+            The diagram has the right control boundary: the harness is the orchestrator, the
+            LLM only decides the next tool call, and the sandbox only executes generated code.
+            That separation is clean and matches the two-tool model.
+          </p>
+        </article>
+        <article class="card">
+          <h3>What to tighten</h3>
+          <p>
+            Context should not be treated as a generic shared blob. The harness should own the
+            append order, prompt assembly, truncation, and summarization rules so the model never
+            directly mutates history.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Recommended adjustment</h3>
+          <p>
+            Keep sandbox bootstrap and lifecycle outside the agent loop. The harness should
+            prepare the repo and Python runtime first, then run iterative LLM and Python steps
+            against that prepared environment.
+          </p>
+        </article>
+      </section>
+
+      <h2 class="section-title">Reference Architecture</h2>
+      <section class="arch">
+        <div class="arch-row">
+          <article class="arch-card system">
+            <h3>System Prompt Head</h3>
+            <p>
+              Added once at context initialization. It describes the sandbox environment, tool
+              contract, operating constraints, and safety rules.
+            </p>
+          </article>
+          <div class="arch-center">
+            <article class="arch-card">
+              <h3>Append-Only Context</h3>
+              <p>
+                The harness reads from this before each LLM call and appends new entries after
+                each user message, assistant tool selection, and tool execution result.
+              </p>
+            </article>
+            <article class="arch-card core">
+              <h3>Harness</h3>
+              <p>
+                The control plane. It receives user input from chat, assembles prompt context,
+                sends context to the LLM, dispatches either <code>text</code> or
+                <code>executePython</code>, captures outputs, and persists artifacts.
+              </p>
+            </article>
+          </div>
+          <div class="arch-stack">
+            <article class="arch-card">
+              <h3>LLM</h3>
+              <p>
+                Receives prompt context from the harness and returns the next tool call: either
+                user-facing <code>text</code> or Python code to execute.
+              </p>
+            </article>
+            <article class="arch-card">
+              <h3>Sandbox</h3>
+              <p>
+                Executes generated Python against the prepared repo and returns stdout, stderr,
+                exit code, and other execution metadata to the harness.
+              </p>
+            </article>
+            <article class="arch-card">
+              <h3>Chat UI</h3>
+              <p>
+                Sends user requests into the harness and receives final or intermediary
+                <code>text</code> responses.
+              </p>
+            </article>
+          </div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-band">
+            <strong>Initialization</strong>
+            <p>
+              The harness creates context, prepends the system prompt head once, boots the
+              sandbox, pulls the repo, prepares Python, and installs dependencies.
+            </p>
+          </div>
+          <div class="arch-band">
+            <strong>Loop</strong>
+            <p>
+              Read recent context, send it to the LLM, receive one tool call, execute it, then
+              append the resulting record. The loop repeats until the harness emits a terminal
+              user-facing response or hits a stop condition.
+            </p>
+          </div>
+          <div class="arch-band">
+            <strong>Append Order</strong>
+            <p>
+              Append user input, append assistant output or tool call, append tool result. This
+              ordering from the diagram is correct and should stay deterministic.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <h2 class="section-title">Core Rules</h2>
+      <section class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Rule</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tool surface</td>
+              <td>The agent may call only <code>text</code> and <code>executePython</code>.</td>
+              <td>No direct shell tool, grep tool, edit tool, or file search tool exists.</td>
+            </tr>
+            <tr>
+              <td>User communication</td>
+              <td><code>text</code> is the only mechanism for user-facing output.</td>
+              <td>Intermediary updates and final answers both flow through this tool contract.</td>
+            </tr>
+            <tr>
+              <td>Work execution</td>
+              <td>
+                <code>executePython</code> runs inline Python in the sandbox repo root.
+              </td>
+              <td>Python may use stdlib, installed packages, and <code>subprocess</code>.</td>
+            </tr>
+            <tr>
+              <td>Operational preference</td>
+              <td>Prefer native Python APIs over shell commands wherever practical.</td>
+              <td>Use <code>pathlib</code>, <code>json</code>, <code>re</code>, <code>urllib</code>, and related stdlib modules first.</td>
+            </tr>
+            <tr>
+              <td>Sandbox setup</td>
+              <td>The host creates the sandbox, pulls the repo, prepares Python, and installs dependencies before the loop starts.</td>
+              <td>The model should not be responsible for environment bootstrap.</td>
+            </tr>
+            <tr>
+              <td>Context ownership</td>
+              <td>The harness owns prompt assembly and append order.</td>
+              <td>The model can observe context through prompts, but cannot rewrite prior entries.</td>
+            </tr>
+            <tr>
+              <td>Context</td>
+              <td>The harness stores an append-only context log for the entire run.</td>
+              <td>Older entries can be summarized for prompts, but raw history remains preserved on disk.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <h2 class="section-title">Execution Flow</h2>
+      <section class="flow">
+        <article class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-copy">
+            <h3>Bootstrap the sandbox</h3>
+            <p>
+              Create a fresh Vercel sandbox, clone or pull the target repository, prepare
+              Python, install repo dependencies, and record the environment summary that will be
+              exposed to the agent.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-copy">
+            <h3>Initialize context head</h3>
+            <p>
+              Create the append-only context log and prepend the one-time system prompt head,
+              including the repo <code>AGENTS.md</code>, the sandbox environment contract, and
+              the explicit two-tool constraint.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-copy">
+            <h3>Read context and generate the next action</h3>
+            <p>
+              The harness reads the current context window before each LLM call. The model then
+              responds with either a <code>text</code> call or an <code>executePython</code>
+              call. If it needs to inspect files, search code, run tests, edit content, or
+              invoke git, it must do that through Python.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">4</div>
+          <div class="flow-copy">
+            <h3>Execute inline Python</h3>
+            <p>
+              The harness runs the Python snippet inside the sandbox using the prepared Python
+              runtime and working directory. The snippet can read and write files directly and can use
+              <code>subprocess</code> when native Python is not the right interface.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">5</div>
+          <div class="flow-copy">
+            <h3>Append results to context</h3>
+            <p>
+              Every user message, model output, tool call, tool result, and stop condition is
+              appended to the run log in deterministic order: user input, assistant action, tool
+              result. The next prompt sees a recent working window plus any generated summary of
+              older entries.
+            </p>
+          </div>
+        </article>
+        <article class="flow-step">
+          <div class="flow-num">6</div>
+          <div class="flow-copy">
+            <h3>Stop and persist artifacts</h3>
+            <p>
+              When the task is complete, the harness stores the final transcript, tool execution
+              metadata, summaries, and stop reason. The sandbox is then destroyed.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <h2 class="section-title">Tool Contract</h2>
+      <section class="grid two">
+        <article class="card">
+          <h3><code>text(message)</code></h3>
+          <ul>
+            <li>Used only to convey a message to the user.</li>
+            <li>Must not be used to simulate file edits or fake tool output.</li>
+            <li>Can be used for progress updates and final answers.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3><code>executePython(code)</code></h3>
+          <ul>
+            <li>Executes inline Python in the sandbox repository root.</li>
+            <li>May use stdlib, installed project dependencies, and <code>subprocess</code>.</li>
+            <li>Handles file reads, file writes, searches, installs, tests, and repo operations.</li>
+          </ul>
+        </article>
+      </section>
+
+      <h2 class="section-title">Environment Contract</h2>
+      <section class="grid two">
+        <article class="card">
+          <h3>What the agent should know</h3>
+          <ul>
+            <li>Absolute repo path inside the sandbox.</li>
+            <li>Python runtime details when relevant.</li>
+            <li>Default working directory.</li>
+            <li>Available network policy and install policy.</li>
+            <li>Timeout, stdout, and stderr truncation limits.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>What the host should handle</h3>
+          <ul>
+            <li>Sandbox creation and teardown.</li>
+            <li>Repo checkout or clone.</li>
+            <li>Python setup and baseline dependency installation.</li>
+            <li>Injecting the environment summary into the prompt.</li>
+            <li>Capturing execution metadata for scoring and auditability.</li>
+          </ul>
+        </article>
+      </section>
+
+      <h2 class="section-title">Append-Only Context Model</h2>
+      <section class="grid two">
+        <article class="card">
+          <h3>Entry Schema</h3>
+          <ul>
+            <li><code>id</code></li>
+            <li><code>timestamp</code></li>
+            <li><code>type</code>: system, user, assistant, tool_call, tool_result</li>
+            <li><code>content</code></li>
+            <li><code>metadata</code>: duration, exit_code, truncation, files touched</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Prompting Strategy</h3>
+          <ul>
+            <li>Preserve the raw log as append-only history on disk.</li>
+            <li>Use a recent context window for active reasoning.</li>
+            <li>Summarize older entries when token pressure increases.</li>
+            <li>Never mutate or delete historical entries from the run artifact.</li>
+          </ul>
+        </article>
+      </section>
+
+      <h2 class="section-title">Run Artifact Requirements</h2>
+      <section class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Artifact</th>
+              <th>Purpose</th>
+              <th>Minimum contents</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Run summary</td>
+              <td>High-level scan of the session</td>
+              <td>Run id, timestamps, stop reason, completed steps, overall outcome</td>
+            </tr>
+            <tr>
+              <td>Context log</td>
+              <td>Full audit trail</td>
+              <td>All append-only entries in order</td>
+            </tr>
+            <tr>
+              <td>Tool execution records</td>
+              <td>Debugging and scoring</td>
+              <td>Python source, stdout, stderr, exit code, duration, truncation flags</td>
+            </tr>
+            <tr>
+              <td>Environment snapshot</td>
+              <td>Reproducibility</td>
+              <td>Repo ref, sandbox config, Python version, and install inputs</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <h2 class="section-title">AGENTS.md Requirements</h2>
+      <section class="note">
+        The repo-level <code>AGENTS.md</code> should explicitly describe the two-tool model, the
+        sandbox environment, the Python-first operating preference, subprocess availability,
+        safety rules for destructive commands, and the expectation that all repo interaction
+        occurs through <code>executePython</code>.
+      </section>
+
+      <h2 class="section-title">Open Decisions</h2>
+      <section class="grid two">
+        <article class="card">
+          <h3>Likely decisions to finalize</h3>
+          <ul>
+            <li>Whether the sandbox is per run, per task, or reused across a bounded session.</li>
+            <li>Whether extra package installs are unrestricted, blocked, or allowlisted.</li>
+            <li>Whether network access is open, restricted, or disabled after bootstrap.</li>
+            <li>Whether file-change diffs are stored after each <code>executePython</code> call.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Recommended defaults</h3>
+          <ul>
+            <li>Fresh sandbox per run.</li>
+            <li>Host installs baseline repo dependencies before the loop starts.</li>
+            <li>Per-call timeout and output truncation.</li>
+            <li>Store raw transcript plus a compact summary.</li>
+          </ul>
+        </article>
+      </section>
+
+      <p class="footer">
+        This is a product and runtime spec for review, not an implementation log. It is meant
+        to make the proposed harness behavior concrete before code changes begin.
+      </p>
+    </main>
+
+    <script>
+      const slider = document.getElementById("font-slider");
+      const output = document.getElementById("font-output");
+
+      function updateFontSize() {
+        const value = slider.value + "px";
+        document.documentElement.style.setProperty("--font-size", value);
+        output.value = value;
+      }
+
+      slider.addEventListener("input", updateFontSize);
+      updateFontSize();
+    </script>
+  </body>
+</html>

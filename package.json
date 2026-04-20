@@ -1,0 +1,41 @@
+{
+  "name": "project-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm build:lib && pnpm build:web",
+    "build:lib": "tsc -p tsconfig.build.json",
+    "build:web": "next build",
+    "dev": "next dev",
+    "lint": "eslint .",
+    "run": "node --enable-source-maps dist/cli.js",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/react": "^3.0.170",
+    "@braintrust/otel": "^0.2.0",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/resources": "^2.7.0",
+    "@opentelemetry/sdk-trace-base": "^2.7.0",
+    "@opentelemetry/sdk-trace-node": "^2.7.0",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@vercel/sandbox": "^1.10.0",
+    "ai": "^6.0.168",
+    "dotenv": "^17.4.2",
+    "next": "^16.2.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@types/node": "24.5.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "9.39.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.46.2"
+  }
+}
