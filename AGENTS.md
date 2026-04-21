@@ -53,6 +53,8 @@ Do not use this folder as a general product repo, website, or research dump.
   quick usage notes
 - `hld-overview.html`
   high-level design explainer for non-code review
+- `harness-playground/`
+  Git submodule checkout of the target repo for local reference
 
 ## Environment
 
@@ -69,7 +71,8 @@ Do not use this folder as a general product repo, website, or research dump.
 - `TAVILY_API_KEY` is forwarded into the sandbox env when present so repo-local Tavily helpers can use it directly
 - local sandbox work assumes Vercel CLI auth and a linked local project
 - the current public target repo used in this session is `ommkar23/harness-playground`
-- the default revision is `codex/tavily-search-helper` unless `HARNESS_REPO_REVISION` overrides it
+- the default revision is `tools` unless `HARNESS_REPO_REVISION` overrides it
+- `harness-playground/` is included in this repo as a Git submodule that tracks the `tools` branch
 
 ## Change Rules
 
@@ -112,7 +115,7 @@ For the chat harness:
 - prefer native Python APIs before using `subprocess`
 - `subprocess` is allowed for git, installs, tests, and other command-oriented tasks
 - the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, and whether git is pre-authenticated
-- the system prompt should also advertise repo-local helper modules present in the cloned target repo, such as `tavily_search.py`
+- the system prompt should also advertise repo-local helper modules present in the cloned target repo, such as `tools/web_search.py`
 - the harness owns context filtering and ordering before conversion to model messages
 - the carry-forward model context keeps user text, assistant text, and completed `executePython` outputs
 - raw tool-call inputs are not carried forward into the next-turn model context

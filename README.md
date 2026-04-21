@@ -5,6 +5,7 @@ Chat-backed sandbox harness built with the Vercel AI SDK and Vercel Sandbox.
 ## Quick start
 
 ```bash
+git submodule update --init --recursive
 pnpm install
 cp .env.example .env
 pnpm build
@@ -37,6 +38,7 @@ Current behavior:
 
 Before running the chat harness locally:
 
+- initialize the `harness-playground` submodule with `git submodule update --init --recursive`
 - set `GEMINI_API_KEY` in `.env`
 - set `HARNESS_REPO_URL` and `HARNESS_REPO_REVISION`
 - run `vercel link` and `vercel env pull` so the sandbox SDK can authenticate locally
@@ -52,6 +54,13 @@ Optional variables:
 - `HARNESS_*` values configure the sandboxed repo execution path.
 - `TAVILY_API_KEY` enables the sandboxed repository's Tavily search helper.
 
-By default the sandbox clones the `codex/tavily-search-helper` branch of the target repo,
-which includes `tavily_search.py`. Override `HARNESS_REPO_REVISION` if you want a different
+By default the sandbox clones the `tools` branch of the target repo, which includes the
+`tools/` Python helper modules. Override `HARNESS_REPO_REVISION` if you want a different
 ref.
+
+This repo also vendors `harness-playground/` as a Git submodule for local reference and
+coordination. To pull the latest submodule commit on its configured branch, run:
+
+```bash
+git submodule update --remote harness-playground
+```

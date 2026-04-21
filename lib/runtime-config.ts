@@ -14,7 +14,7 @@ const runtimeConfigSchema = z.object({
     .string()
     .url()
     .default('https://github.com/ommkar23/harness-playground.git'),
-  HARNESS_REPO_REVISION: z.string().min(1).default('codex/tavily-search-helper'),
+  HARNESS_REPO_REVISION: z.string().min(1).default('tools'),
   HARNESS_SANDBOX_TIMEOUT_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
   HARNESS_EXECUTION_TIMEOUT_MS: z.coerce
     .number()

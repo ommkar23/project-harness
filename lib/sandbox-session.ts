@@ -237,8 +237,8 @@ export function buildSandboxSummary(): string {
     'executePython runs your code inside the prepared sandbox environment.',
     'You may use Python stdlib, installed packages, and subprocess as needed.',
     'Prefer native Python APIs over shell commands when practical.',
-    'A tavily_search.py helper is available in the repository root for web search.',
-    'Import it with `from tavily_search import search` and call `search(...)`.',
+    'Web search helpers are available under the repository `tools/` package.',
+    'Import them with `from tools.web_search import search` and call `search(...)`.',
   ];
 
   if (runtimeConfig.TAVILY_API_KEY != null) {
