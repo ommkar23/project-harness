@@ -3,8 +3,7 @@ import { z } from 'zod';
 
 import {
   getDefaultChatModel,
-  INELIGIBLE_GEMINI_MODEL_IDS,
-  isEligibleGeminiModelId,
+  isEligibleModelId,
 } from '../src/models';
 import { buildSandboxSummary, executePythonInSandbox } from './sandbox-session';
 
@@ -166,15 +165,8 @@ function parseChatRequestBody(value: unknown): ChatRequestBody {
 
 export async function createChatResponse(request: Request): Promise<Response> {
   const body = parseChatRequestBody(await request.json());
-  if (body.modelId != null && !isEligibleGeminiModelId(body.modelId)) {
-    const ineligibleReason =
-      INELIGIBLE_GEMINI_MODEL_IDS[body.modelId as keyof typeof INELIGIBLE_GEMINI_MODEL_IDS];
-
-    throw new Error(
-      ineligibleReason != null
-        ? `Model ${body.modelId} is not selectable. ${ineligibleReason}`
-        : `Model ${body.modelId} is not in the harness allowlist.`,
-    );
+  if (body.modelId != null && !isEligibleModelId(body.modelId)) {
+    throw new Error(`Model ${body.modelId} is not in the harness allowlist.`);
   }
 
   const model = getDefaultChatModel(body.modelId);
@@ -191,6 +183,7 @@ export async function createChatResponse(request: Request): Promise<Response> {
       functionId: 'project-harness-chat',
       metadata: { chatId: body.id, modelId: model.id },
     },
+    ...(model.providerOptions != null ? { providerOptions: model.providerOptions } : {}),
     tools: {
       executePython: tool({
         description:

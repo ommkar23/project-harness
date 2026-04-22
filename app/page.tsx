@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { useState, type FormEvent, type KeyboardEvent, type ReactElement } from 'react';
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
@@ -8,8 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import {
-  ELIGIBLE_GEMINI_MODEL_OPTIONS,
-  INELIGIBLE_GEMINI_MODEL_IDS,
+  ELIGIBLE_MODEL_OPTIONS,
 } from '../src/models';
 
 function getMessageText(message: UIMessage): string {
@@ -120,7 +119,7 @@ function renderToolPart(part: ExecutePythonToolPart): ReactElement {
   );
 }
 
-const DEFAULT_SELECTED_MODEL_ID = 'gemini-3-flash-preview';
+const DEFAULT_SELECTED_MODEL_ID = 'openai/gpt-5.4-mini';
 
 function createChatSessionId(): string {
   return globalThis.crypto.randomUUID();
@@ -192,12 +191,10 @@ export default function HomePage(): ReactElement {
     transport: new DefaultChatTransport({ api: '/api/chat' }),
   });
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
-
+  async function submitCurrentMessage(): Promise<void> {
     const trimmed = input.trim();
 
-    if (trimmed.length === 0) {
+    if (trimmed.length === 0 || status !== 'ready' || isResetting) {
       return;
     }
 
@@ -210,6 +207,20 @@ export default function HomePage(): ReactElement {
         },
       },
     );
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    await submitCurrentMessage();
+  }
+
+  async function handleInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): Promise<void> {
+    if (!event.metaKey || event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+    await submitCurrentMessage();
   }
 
   async function handleReset(): Promise<void> {
@@ -253,7 +264,7 @@ export default function HomePage(): ReactElement {
         </p>
         <div className="modelPicker">
           <label className="modelPickerLabel" htmlFor="modelId">
-            Gemini model
+            Harness model
           </label>
           <select
             className="modelSelect"
@@ -261,17 +272,15 @@ export default function HomePage(): ReactElement {
             onChange={(event) => setSelectedModelId(event.target.value)}
             value={selectedModelId}
           >
-            {ELIGIBLE_GEMINI_MODEL_OPTIONS.map((option) => (
+            {ELIGIBLE_MODEL_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}
               </option>
             ))}
           </select>
           <p className="modelHint">
-            Eligible models verified from current Google docs:{' '}
-            {ELIGIBLE_GEMINI_MODEL_OPTIONS.map((option) => option.id).join(', ')}.{' '}
-            <code>gemini-3-pro-preview</code> is excluded because{' '}
-            {INELIGIBLE_GEMINI_MODEL_IDS['gemini-3-pro-preview'].toLowerCase()}
+            Current harness allowlist: {ELIGIBLE_MODEL_OPTIONS.map((option) => option.id).join(', ')}.
+            The default uses <code>openai/gpt-5.4-mini</code> through AI Gateway.
           </p>
         </div>
       </section>
@@ -310,6 +319,9 @@ export default function HomePage(): ReactElement {
         >
           <textarea
             className="input"
+            onKeyDown={(event) => {
+              void handleInputKeyDown(event);
+            }}
             name="prompt"
             onChange={(event) => setInput(event.target.value)}
             placeholder="Describe the change or inspection you want the harness to carry out."

@@ -9,6 +9,7 @@
     "build:web": "next build",
     "dev": "next dev",
     "lint": "eslint .",
+    "models:gateway": "pnpm build:lib && node dist/list-ai-gateway-models.js",
     "start": "next start"
   },
   "dependencies": {

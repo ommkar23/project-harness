@@ -1,8 +1,8 @@
 export {
-  ELIGIBLE_GEMINI_MODEL_OPTIONS,
+  ELIGIBLE_MODEL_OPTIONS,
   getDefaultChatModel,
   getDefaultModelId,
-  INELIGIBLE_GEMINI_MODEL_IDS,
-  isEligibleGeminiModelId,
+  getEligibleModelOptions,
+  isEligibleModelId,
 } from './models.js';
-export type { GeminiModelOption, HarnessModel } from './models.js';
+export type { HarnessModel, HarnessModelOption } from './models.js';

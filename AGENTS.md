@@ -61,7 +61,7 @@ Do not use this folder as a general product repo, website, or research dump.
 ## Environment
 
 - use `pnpm`
-- use `GEMINI_API_KEY` for model access unless the user explicitly requests a different provider
+- use `AI_GATEWAY_API_KEY` for model access through Vercel AI Gateway
 - use `BRAINTRUST_API_KEY` for OpenTelemetry tracing via Braintrust
 - keep secrets out of source control
 - `.env.example` should document required environment variables
@@ -71,6 +71,7 @@ Do not use this folder as a general product repo, website, or research dump.
 - credentials are passed as `source.username`/`source.password` in `Sandbox.create` for the initial clone, and written to `~/.netrc` inside the sandbox for subsequent git operations
 - the PAT is NOT forwarded as an env var into the sandbox
 - `TAVILY_API_KEY` is forwarded into the sandbox env when present so repo-local Tavily helpers can use it directly
+- the current harness chat model is `openai/gpt-5.4-mini` via AI Gateway
 - local sandbox work assumes Vercel CLI auth and a linked local project
 - the current public target repo used in this session is `ommkar23/harness-playground`
 - the default revision is `tools` unless `HARNESS_REPO_REVISION` overrides it
@@ -110,6 +111,7 @@ For the chat harness:
 - keep Python code and code output collapsed by default when rendered as tool UI blocks
 - render assistant text responses as Markdown
 - keep user-authored prompts rendered as plain text
+- support `Cmd+Enter` in the chat textarea to submit the current message
 - do not add a custom context viewer — runtime tracing goes to Braintrust via `experimental_telemetry`
 
 ## Chat Harness
@@ -123,9 +125,8 @@ For the chat harness:
 - the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, and whether git is pre-authenticated
 - the system prompt should advertise repo-local helper modules present in the cloned target repo, such as `tools/web_search.py`
 - when Reddit blocks unauthenticated `.json` requests from the sandbox, surface that as an environment/access limitation rather than as a generic Python failure
-- the chat request may carry a selected Gemini `modelId`, but it must be validated against the harness allowlist before use
-- the chat UI exposes only the eligible Gemini allowlist: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`, and `gemini-3.1-pro-preview`
-- `gemini-3-pro-preview` is intentionally excluded from selection because Google lists it as shut down
+- the chat request may carry a selected AI Gateway `modelId`, but it must be validated against the harness allowlist before use
+- the chat UI currently exposes only one eligible allowlist entry: `openai/gpt-5.4-mini`
 - the harness owns context filtering and ordering before conversion to model messages
 - the carry-forward model context keeps user text, assistant text, and completed `executePython` outputs
 - raw tool-call inputs are not carried forward into the next-turn model context

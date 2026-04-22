@@ -23,7 +23,7 @@ pnpm dev
 
 Open `http://localhost:3000` and send a request. The route in
 [app/api/chat/route.ts](/Users/ommkar/dev/markagen/project-harness/app/api/chat/route.ts)
-uses Gemini for reasoning and exposes a single server-side tool,
+uses Vercel AI Gateway for reasoning and exposes a single server-side tool,
 `executePython`, which runs inline Python in a Vercel sandbox that clones the configured
 repository.
 
@@ -39,19 +39,21 @@ Current behavior:
 Before running the chat harness locally:
 
 - initialize the `harness-playground` submodule with `git submodule update --init --recursive`
-- set `GEMINI_API_KEY` in `.env`
+- set `AI_GATEWAY_API_KEY` in `.env`
 - set `HARNESS_REPO_URL` and `HARNESS_REPO_REVISION`
 - run `vercel link` and `vercel env pull` so the sandbox SDK can authenticate locally
 - if the repo is private, set `HARNESS_REPO_GIT_USERNAME` and `HARNESS_REPO_GIT_PASSWORD`
 
 ## Environment
 
-Set `GEMINI_API_KEY` in `.env` before running the chat harness.
+Set `AI_GATEWAY_API_KEY` in `.env` before running the chat harness.
 
 Optional variables:
 
-- `GEMINI_CHAT_MODEL_ID` overrides the model used by the chat harness.
-- The chat UI exposes a Gemini dropdown allowlist with `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`, and `gemini-3.1-pro-preview`.
+- `HARNESS_CHAT_MODEL_ID` overrides the model used by the chat harness.
+- `HARNESS_MODEL_ID` overrides the default harness model.
+- The chat UI currently exposes a single AI Gateway allowlist entry: `openai/gpt-5.4-mini`.
+- The default harness model is `openai/gpt-5.4-mini`.
 - `HARNESS_*` values configure the sandboxed repo execution path.
 - `TAVILY_API_KEY` enables the sandboxed repository's Tavily search helper.
 
