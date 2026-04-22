@@ -55,7 +55,9 @@ Optional variables:
 - The chat UI currently exposes a single AI Gateway allowlist entry: `openai/gpt-5.4-mini`.
 - The default harness model is `openai/gpt-5.4-mini`.
 - `HARNESS_*` values configure the sandboxed repo execution path.
+- `EXA_API_KEY` enables the sandboxed repository's Exa search helper.
 - `TAVILY_API_KEY` enables the sandboxed repository's Tavily search helper.
+- `FIRECRAWL_API_KEY` enables the sandboxed repository's Firecrawl search helper.
 
 The chat UI also includes a reset control that clears the current conversation and stops the
 current sandbox session so the next message starts from a fresh clone.

@@ -22,7 +22,9 @@ const runtimeConfigSchema = z.object({
     .positive()
     .default(2 * 60 * 1000),
   HARNESS_EXECUTION_OUTPUT_LIMIT: z.coerce.number().int().positive().default(12_000),
+  EXA_API_KEY: optionalString,
   TAVILY_API_KEY: optionalString,
+  FIRECRAWL_API_KEY: optionalString,
   HARNESS_REPO_GIT_PASSWORD: optionalString,
 });
 

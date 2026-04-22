@@ -2,14 +2,14 @@
 
 ## Purpose
 
-`project-harness` is a chat-backed coding harness using the Vercel AI SDK, Gemini, and Vercel Sandbox.
+`project-harness` is a chat-backed coding harness using the Vercel AI SDK, AI Gateway-backed models, and Vercel Sandbox.
 
 The project exists to:
 
 - execute repo-aware coding tasks inside a sandboxed Python environment
 - keep the tool surface narrow and intentional
 - preserve telemetry for chat and sandbox execution
-- support repo-local helper modules such as Tavily web search when present in the cloned target repo
+- support repo-local helper modules such as Exa, Firecrawl, or Tavily web search when present in the cloned target repo
 
 ## Scope
 
@@ -70,14 +70,16 @@ Do not use this folder as a general product repo, website, or research dump.
 - for private repositories, set `HARNESS_REPO_GIT_PASSWORD=<github-pat>`; the username is always `x-access-token` (hardcoded per GitHub PAT convention)
 - credentials are passed as `source.username`/`source.password` in `Sandbox.create` for the initial clone, and written to `~/.netrc` inside the sandbox for subsequent git operations
 - the PAT is NOT forwarded as an env var into the sandbox
-- `TAVILY_API_KEY` is forwarded into the sandbox env when present so repo-local Tavily helpers can use it directly
+- `EXA_API_KEY`, `TAVILY_API_KEY`, and `FIRECRAWL_API_KEY` are forwarded into the sandbox env when present so repo-local web search helpers can use any configured backend directly
 - the current harness chat model is `openai/gpt-5.4-mini` via AI Gateway
 - local sandbox work assumes Vercel CLI auth and a linked local project
 - the current public target repo used in this session is `ommkar23/harness-playground`
 - the default revision is `tools` unless `HARNESS_REPO_REVISION` overrides it
 - `harness-playground/` is included in this repo as a Git submodule that tracks the `tools` branch
 - repo-local helper modules in the target repo live under `tools/`, including `tools/web_search.py` and `tools/reddit_research.py`
+- the current `harness-playground` submodule revision in this repo is `f542a52` on `tools`
 - the Reddit helper uses unauthenticated Reddit `.json` endpoints, which may be blocked from sandbox or datacenter IP ranges even with a custom `User-Agent`
+- repo-local web search helpers currently support `exa`, `firecrawl`, and `tavily`
 
 ## Change Rules
 
@@ -122,8 +124,10 @@ For the chat harness:
 - all repo interaction must happen through `executePython`
 - prefer native Python APIs before using `subprocess`
 - `subprocess` is allowed for git, installs, tests, and other command-oriented tasks
-- the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, and whether git is pre-authenticated
+- the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, current date/time, and whether git is pre-authenticated
 - the system prompt should advertise repo-local helper modules present in the cloned target repo, such as `tools/web_search.py`
+- the system prompt should tell the agent to start by reading the target repository README
+- the system prompt should tell the agent to inspect helper docstrings before use
 - when Reddit blocks unauthenticated `.json` requests from the sandbox, surface that as an environment/access limitation rather than as a generic Python failure
 - the chat request may carry a selected AI Gateway `modelId`, but it must be validated against the harness allowlist before use
 - the chat UI currently exposes only one eligible allowlist entry: `openai/gpt-5.4-mini`
@@ -133,6 +137,28 @@ For the chat harness:
 - `executePython` results are reformatted into synthetic context entries before conversion with AI SDK `convertToModelMessages(...)`
 - do not tell the model to manage a virtual environment; sandbox runtime setup is a harness concern
 - the chat UI includes a reset control that must clear the current conversation and stop the active sandbox session so the next turn starts from a fresh clone
+
+## Repo Helpers
+
+- `tools.web_search.search(...)` is the stable public interface for repo-local web search
+- supported providers are `exa`, `firecrawl`, and `tavily`
+- `firecrawl` currently normalizes its provider response into a top-level `results` list
+- `exa` and `tavily` currently return their parsed native provider payloads
+- helper interface docstrings are the source of truth for parameter and return-shape details
+- the target repo README includes backend-selection guidance for agents and should be read before using helpers
+
+## Network Notes
+
+- repo-local web search helpers use `urllib.request` with an explicit `User-Agent`
+- repo-local web search helpers now use a `certifi`-aware SSL context when `certifi` is available
+- local smoke tests previously exposed TLS trust-store issues that did not reproduce in Vercel Sandbox
+- Exa may reject requests from some environments with Cloudflare `browser_signature_banned` or other access-denied responses even when the request is otherwise valid
+- treat those Exa/Cloudflare failures as environment or upstream access-policy limitations, not as prompt or Python logic failures
+
+## Testing Notes
+
+- `harness-playground/tests/test_tools_smoke.py` provides smoke coverage for the web search helpers and Reddit research primitives
+- the smoke tests are environment-aware and may skip on missing API keys, TLS certificate issues, or Reddit sandbox blocking
 
 ## Telemetry
 
