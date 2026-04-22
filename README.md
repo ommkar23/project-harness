@@ -58,6 +58,10 @@ By default the sandbox clones the `tools` branch of the target repo, which inclu
 `tools/` Python helper modules. Override `HARNESS_REPO_REVISION` if you want a different
 ref.
 
+The Reddit helper in `harness-playground/tools/` uses unauthenticated Reddit `.json` endpoints.
+Those requests can be blocked from sandbox or datacenter IP ranges, so direct Reddit fetches are
+not guaranteed to work inside Vercel Sandbox even with a custom `User-Agent`.
+
 This repo also vendors `harness-playground/` as a Git submodule for local reference and
 coordination. To pull the latest submodule commit on its configured branch, run:
 

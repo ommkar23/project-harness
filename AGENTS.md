@@ -73,6 +73,8 @@ Do not use this folder as a general product repo, website, or research dump.
 - the current public target repo used in this session is `ommkar23/harness-playground`
 - the default revision is `tools` unless `HARNESS_REPO_REVISION` overrides it
 - `harness-playground/` is included in this repo as a Git submodule that tracks the `tools` branch
+- repo-local helper modules in the target repo live under `tools/`, including `tools/web_search.py` and `tools/reddit_research.py`
+- the Reddit helper uses unauthenticated Reddit `.json` endpoints, which may be blocked from sandbox or datacenter IP ranges even with a custom `User-Agent`
 
 ## Change Rules
 
@@ -115,7 +117,8 @@ For the chat harness:
 - prefer native Python APIs before using `subprocess`
 - `subprocess` is allowed for git, installs, tests, and other command-oriented tasks
 - the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, and whether git is pre-authenticated
-- the system prompt should also advertise repo-local helper modules present in the cloned target repo, such as `tools/web_search.py`
+- the system prompt should advertise repo-local helper modules present in the cloned target repo, such as `tools/web_search.py`
+- when Reddit blocks unauthenticated `.json` requests from the sandbox, surface that as an environment/access limitation rather than as a generic Python failure
 - the harness owns context filtering and ordering before conversion to model messages
 - the carry-forward model context keeps user text, assistant text, and completed `executePython` outputs
 - raw tool-call inputs are not carried forward into the next-turn model context

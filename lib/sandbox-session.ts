@@ -6,6 +6,17 @@ import { getRuntimeConfig } from './runtime-config';
 
 const REPO_PATH = '/vercel/sandbox';
 const PYTHON_COMMAND = 'python3';
+const PYTHON_EXECUTION_BOOTSTRAP = [
+  'import sys',
+  'from pathlib import Path',
+  '',
+  '# Ensure repo-local packages such as tools/ are importable from .harness temp scripts.',
+  'workspace = Path(__file__).resolve().parents[1]',
+  'workspace_str = str(workspace)',
+  'if workspace_str not in sys.path:',
+  '    sys.path.insert(0, workspace_str)',
+  '',
+].join('\n');
 
 type SandboxSessionRecord = {
   chatId: string;
@@ -238,7 +249,11 @@ export function buildSandboxSummary(): string {
     'You may use Python stdlib, installed packages, and subprocess as needed.',
     'Prefer native Python APIs over shell commands when practical.',
     'Web search helpers are available under the repository `tools/` package.',
-    'Import them with `from tools.web_search import search` and call `search(...)`.',
+    'The harness adds the repo root to the Python import path before your code runs.',
+    'Import helpers with `from tools.web_search import search` or `from tools.reddit_research import ...`.',
+    'Inspect helper docstrings before use. For Tavily-backed search, `search(...)` returns a parsed JSON dictionary whose `results` field is a list of result dictionaries.',
+    'Direct unauthenticated Reddit `.json` requests may be blocked from this sandbox environment.',
+    'If Reddit blocks a request, report that clearly and avoid assuming the failure is caused by Python code alone.',
   ];
 
   if (runtimeConfig.TAVILY_API_KEY != null) {
@@ -262,15 +277,19 @@ export async function executePythonInSandbox(params: {
   const { sandbox, record } = await getOrCreateSandboxSession(params.chatId);
   const scriptDirectory = `${REPO_PATH}/.harness`;
   const scriptPath = `${scriptDirectory}/exec-${randomUUID()}.py`;
+  const scriptContents = `${PYTHON_EXECUTION_BOOTSTRAP}${params.code}`;
 
   await sandbox.fs.mkdir(scriptDirectory, { recursive: true });
-  await sandbox.fs.writeFile(scriptPath, params.code, 'utf8');
+  await sandbox.fs.writeFile(scriptPath, scriptContents, 'utf8');
 
   const startTime = Date.now();
   const result = await sandbox.runCommand({
     cmd: PYTHON_COMMAND,
     args: [scriptPath],
     cwd: REPO_PATH,
+    env: {
+      PYTHONPATH: REPO_PATH,
+    },
     signal: AbortSignal.timeout(runtimeConfig.HARNESS_EXECUTION_TIMEOUT_MS),
   });
   const durationMs = Date.now() - startTime;
