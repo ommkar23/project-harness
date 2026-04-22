@@ -51,8 +51,12 @@ Set `GEMINI_API_KEY` in `.env` before running the chat harness.
 Optional variables:
 
 - `GEMINI_CHAT_MODEL_ID` overrides the model used by the chat harness.
+- The chat UI exposes a Gemini dropdown allowlist with `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`, and `gemini-3.1-pro-preview`.
 - `HARNESS_*` values configure the sandboxed repo execution path.
 - `TAVILY_API_KEY` enables the sandboxed repository's Tavily search helper.
+
+The chat UI also includes a reset control that clears the current conversation and stops the
+current sandbox session so the next message starts from a fresh clone.
 
 By default the sandbox clones the `tools` branch of the target repo, which includes the
 `tools/` Python helper modules. Override `HARNESS_REPO_REVISION` if you want a different

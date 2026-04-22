@@ -4,6 +4,13 @@ import { useState, type FormEvent, type ReactElement } from 'react';
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import {
+  ELIGIBLE_GEMINI_MODEL_OPTIONS,
+  INELIGIBLE_GEMINI_MODEL_IDS,
+} from '../src/models';
 
 function getMessageText(message: UIMessage): string {
   return message.parts
@@ -113,10 +120,75 @@ function renderToolPart(part: ExecutePythonToolPart): ReactElement {
   );
 }
 
+const DEFAULT_SELECTED_MODEL_ID = 'gemini-3-flash-preview';
+
+function createChatSessionId(): string {
+  return globalThis.crypto.randomUUID();
+}
+
+function renderMessageBody(message: UIMessage): ReactElement {
+  const text = getMessageText(message);
+
+  if (message.role === 'user') {
+    return <pre className="messageText">{text.length > 0 ? text : '[non-text response]'}</pre>;
+  }
+
+  if (text.length === 0) {
+    return <pre className="messageText">[non-text response]</pre>;
+  }
+
+  return (
+    <div className="markdownMessage">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code(props) {
+            const { children, className, ...rest } = props;
+            const codeText = Array.isArray(children)
+              ? children
+                  .filter((child): child is string => typeof child === 'string')
+                  .join('')
+              : typeof children === 'string'
+                ? children
+                : '';
+            const isBlock = className != null || codeText.includes('\n');
+
+            if (!isBlock) {
+              return (
+                <code className="inlineCode" {...rest}>
+                  {children}
+                </code>
+              );
+            }
+
+            return (
+              <pre className="markdownCodeBlock">
+                <code className={className} {...rest}>
+                  {children}
+                </code>
+              </pre>
+            );
+          },
+          a(props) {
+            return <a {...props} rel="noreferrer" target="_blank" />;
+          },
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
 export default function HomePage(): ReactElement {
   const [input, setInput] = useState('');
+  const [chatId, setChatId] = useState(createChatSessionId);
+  const [selectedModelId, setSelectedModelId] = useState(DEFAULT_SELECTED_MODEL_ID);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, stop } = useChat({
+    id: chatId,
     transport: new DefaultChatTransport({ api: '/api/chat' }),
   });
 
@@ -130,7 +202,43 @@ export default function HomePage(): ReactElement {
     }
 
     setInput('');
-    await sendMessage({ text: trimmed });
+    await sendMessage(
+      { text: trimmed },
+      {
+        body: {
+          modelId: selectedModelId,
+        },
+      },
+    );
+  }
+
+  async function handleReset(): Promise<void> {
+    setResetError(null);
+    setIsResetting(true);
+    void stop();
+
+    try {
+      const response = await fetch('/api/chat/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chatId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      setInput('');
+      setChatId(createChatSessionId());
+    } catch (resetFailure) {
+      setResetError(
+        resetFailure instanceof Error ? resetFailure.message : 'Failed to reset chat session.',
+      );
+    } finally {
+      setIsResetting(false);
+    }
   }
 
   return (
@@ -143,6 +251,29 @@ export default function HomePage(): ReactElement {
           pulls the configured GitHub repository. Python code and sandbox output appear as
           collapsible steps in the chat stream.
         </p>
+        <div className="modelPicker">
+          <label className="modelPickerLabel" htmlFor="modelId">
+            Gemini model
+          </label>
+          <select
+            className="modelSelect"
+            id="modelId"
+            onChange={(event) => setSelectedModelId(event.target.value)}
+            value={selectedModelId}
+          >
+            {ELIGIBLE_GEMINI_MODEL_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="modelHint">
+            Eligible models verified from current Google docs:{' '}
+            {ELIGIBLE_GEMINI_MODEL_OPTIONS.map((option) => option.id).join(', ')}.{' '}
+            <code>gemini-3-pro-preview</code> is excluded because{' '}
+            {INELIGIBLE_GEMINI_MODEL_IDS['gemini-3-pro-preview'].toLowerCase()}
+          </p>
+        </div>
       </section>
 
       <section className="chatPanel">
@@ -154,15 +285,13 @@ export default function HomePage(): ReactElement {
           ) : null}
 
           {messages.map((message) => {
-            const text = getMessageText(message);
-
             return (
               <article
                 key={message.id}
                 className={message.role === 'user' ? 'message userMessage' : 'message'}
               >
                 <div className="messageMeta">{message.role === 'user' ? 'User' : 'Harness'}</div>
-                <pre className="messageText">{text.length > 0 ? text : '[non-text response]'}</pre>
+                {renderMessageBody(message)}
                 {message.parts
                   .filter(isExecutePythonToolPart)
                   .map((part) => (
@@ -191,10 +320,23 @@ export default function HomePage(): ReactElement {
             <div className="status">
               <span>Status: {status}</span>
               {error != null ? <span className="error">Error: {error.message}</span> : null}
+              {resetError != null ? <span className="error">Reset: {resetError}</span> : null}
             </div>
-            <button className="sendButton" disabled={status !== 'ready'} type="submit">
-              Send
-            </button>
+            <div className="composerActions">
+              <button
+                className="resetButton"
+                disabled={isResetting}
+                onClick={() => {
+                  void handleReset();
+                }}
+                type="button"
+              >
+                {isResetting ? 'Resetting...' : 'Reset Chat + Sandbox'}
+              </button>
+              <button className="sendButton" disabled={status !== 'ready' || isResetting} type="submit">
+                Send
+              </button>
+            </div>
           </div>
         </form>
       </section>

@@ -76,6 +76,41 @@ body {
   line-height: 1.65;
 }
 
+.modelPicker {
+  display: grid;
+  gap: 10px;
+  max-width: 560px;
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 250, 243, 0.82);
+}
+
+.modelPickerLabel {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.modelSelect {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fffdfa;
+  color: var(--text);
+  font: inherit;
+}
+
+.modelHint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
 .chatPanel {
   margin-top: 22px;
   padding: 20px;
@@ -120,6 +155,114 @@ body {
   color: var(--text);
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   line-height: 1.5;
+}
+
+.markdownMessage {
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.markdownMessage > :first-child {
+  margin-top: 0;
+}
+
+.markdownMessage > :last-child {
+  margin-bottom: 0;
+}
+
+.markdownMessage p,
+.markdownMessage ul,
+.markdownMessage ol,
+.markdownMessage blockquote,
+.markdownMessage pre,
+.markdownMessage table {
+  margin: 0 0 14px;
+}
+
+.markdownMessage h1,
+.markdownMessage h2,
+.markdownMessage h3,
+.markdownMessage h4,
+.markdownMessage h5,
+.markdownMessage h6 {
+  margin: 18px 0 10px;
+  line-height: 1.2;
+}
+
+.markdownMessage h1 {
+  font-size: 1.55rem;
+}
+
+.markdownMessage h2 {
+  font-size: 1.3rem;
+}
+
+.markdownMessage h3 {
+  font-size: 1.12rem;
+}
+
+.markdownMessage ul,
+.markdownMessage ol {
+  padding-left: 1.35rem;
+}
+
+.markdownMessage li + li {
+  margin-top: 6px;
+}
+
+.markdownMessage a {
+  color: var(--accent-strong);
+}
+
+.markdownMessage blockquote {
+  margin-left: 0;
+  padding: 10px 14px;
+  border-left: 3px solid rgba(158, 77, 48, 0.28);
+  border-radius: 0 14px 14px 0;
+  background: rgba(158, 77, 48, 0.05);
+  color: var(--muted);
+}
+
+.inlineCode {
+  padding: 0.12rem 0.4rem;
+  border-radius: 8px;
+  background: rgba(71, 56, 41, 0.08);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.92em;
+}
+
+.markdownCodeBlock {
+  margin: 0 0 14px;
+  padding: 14px;
+  overflow: auto;
+  border-radius: 16px;
+  background: rgba(255, 249, 240, 0.96);
+  border: 1px solid rgba(71, 56, 41, 0.1);
+}
+
+.markdownCodeBlock code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.markdownMessage table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.markdownMessage th,
+.markdownMessage td {
+  padding: 10px 12px;
+  border: 1px solid rgba(71, 56, 41, 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdownMessage th {
+  background: rgba(158, 77, 48, 0.08);
 }
 
 .toolCard {
@@ -232,6 +375,12 @@ body {
   margin-top: 14px;
 }
 
+.composerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .status {
   display: grid;
   gap: 4px;
@@ -253,6 +402,17 @@ body {
   cursor: pointer;
 }
 
+.resetButton {
+  border: 1px solid rgba(71, 56, 41, 0.16);
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: rgba(255, 250, 243, 0.95);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.resetButton:disabled,
 .sendButton:disabled {
   opacity: 0.55;
   cursor: not-allowed;

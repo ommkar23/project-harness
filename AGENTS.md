@@ -41,6 +41,8 @@ Do not use this folder as a general product repo, website, or research dump.
   sandbox session logic for Next.js runtime
 - `app/api/chat/route.ts`
   chat endpoint returning AI SDK UI message streams
+- `app/api/chat/reset/route.ts`
+  reset endpoint that clears the active chat sandbox session
 - `app/page.tsx`
   chat UI
 - `instrumentation.ts`
@@ -106,6 +108,8 @@ For the chat harness:
 - render `executePython` activity inline in the chat stream rather than in a separate context sidebar
 - show Python tool input and sandbox output as separate sequential UI elements
 - keep Python code and code output collapsed by default when rendered as tool UI blocks
+- render assistant text responses as Markdown
+- keep user-authored prompts rendered as plain text
 - do not add a custom context viewer — runtime tracing goes to Braintrust via `experimental_telemetry`
 
 ## Chat Harness
@@ -119,11 +123,15 @@ For the chat harness:
 - the system prompt is built by `buildSandboxSummary()` and includes repo URL, revision, workspace path, and whether git is pre-authenticated
 - the system prompt should advertise repo-local helper modules present in the cloned target repo, such as `tools/web_search.py`
 - when Reddit blocks unauthenticated `.json` requests from the sandbox, surface that as an environment/access limitation rather than as a generic Python failure
+- the chat request may carry a selected Gemini `modelId`, but it must be validated against the harness allowlist before use
+- the chat UI exposes only the eligible Gemini allowlist: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`, and `gemini-3.1-pro-preview`
+- `gemini-3-pro-preview` is intentionally excluded from selection because Google lists it as shut down
 - the harness owns context filtering and ordering before conversion to model messages
 - the carry-forward model context keeps user text, assistant text, and completed `executePython` outputs
 - raw tool-call inputs are not carried forward into the next-turn model context
 - `executePython` results are reformatted into synthetic context entries before conversion with AI SDK `convertToModelMessages(...)`
 - do not tell the model to manage a virtual environment; sandbox runtime setup is a harness concern
+- the chat UI includes a reset control that must clear the current conversation and stop the active sandbox session so the next turn starts from a fresh clone
 
 ## Telemetry
 

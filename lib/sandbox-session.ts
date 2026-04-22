@@ -238,6 +238,32 @@ export async function getOrCreateSandboxSession(chatId: string): Promise<{
   return createSandboxSession(chatId);
 }
 
+export async function resetSandboxSession(chatId: string): Promise<{
+  reset: boolean;
+  sandboxId?: string;
+}> {
+  const store = getSessionStore();
+  const existing = store.get(chatId);
+
+  if (existing == null) {
+    return { reset: false };
+  }
+
+  store.delete(chatId);
+
+  try {
+    const sandbox = await Sandbox.get({ sandboxId: existing.sandboxId });
+    await sandbox.stop({ blocking: true });
+  } catch {
+    // The sandbox may already be gone; resetting the session store is sufficient.
+  }
+
+  return {
+    reset: true,
+    sandboxId: existing.sandboxId,
+  };
+}
+
 export function buildSandboxSummary(): string {
   const runtimeConfig = getRuntimeConfig();
 

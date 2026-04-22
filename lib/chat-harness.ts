@@ -1,7 +1,11 @@
 import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from 'ai';
 import { z } from 'zod';
 
-import { getDefaultChatModel } from '../src/models';
+import {
+  getDefaultChatModel,
+  INELIGIBLE_GEMINI_MODEL_IDS,
+  isEligibleGeminiModelId,
+} from '../src/models';
 import { buildSandboxSummary, executePythonInSandbox } from './sandbox-session';
 
 const executePythonSchema = z.object({
@@ -16,6 +20,7 @@ const executePythonSchema = z.object({
 type ChatRequestBody = {
   id: string;
   messages: UIMessage[];
+  modelId?: string;
 };
 
 type ContextModelMessages = Awaited<ReturnType<typeof convertToModelMessages>>;
@@ -140,8 +145,9 @@ function parseChatRequestBody(value: unknown): ChatRequestBody {
   const record = value as {
     id?: unknown;
     messages?: unknown;
+    modelId?: unknown;
   };
-  const { id, messages } = record;
+  const { id, messages, modelId } = record;
 
   if (typeof id !== 'string' || id.length === 0) {
     throw new Error('Chat request must include a non-empty id.');
@@ -154,12 +160,24 @@ function parseChatRequestBody(value: unknown): ChatRequestBody {
   return {
     id,
     messages: messages as UIMessage[],
+    ...(typeof modelId === 'string' && modelId.length > 0 ? { modelId } : {}),
   };
 }
 
 export async function createChatResponse(request: Request): Promise<Response> {
   const body = parseChatRequestBody(await request.json());
-  const model = getDefaultChatModel();
+  if (body.modelId != null && !isEligibleGeminiModelId(body.modelId)) {
+    const ineligibleReason =
+      INELIGIBLE_GEMINI_MODEL_IDS[body.modelId as keyof typeof INELIGIBLE_GEMINI_MODEL_IDS];
+
+    throw new Error(
+      ineligibleReason != null
+        ? `Model ${body.modelId} is not selectable. ${ineligibleReason}`
+        : `Model ${body.modelId} is not in the harness allowlist.`,
+    );
+  }
+
+  const model = getDefaultChatModel(body.modelId);
   const contextMessages = await buildContextModelMessages(body.messages);
 
   const result = streamText({
