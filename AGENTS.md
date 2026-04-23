@@ -29,16 +29,28 @@ Do not use this folder as a general product repo, website, or research dump.
 
 - `src/`
   TypeScript source for shared Node-emitted modules. Compiled by `tsc` with `moduleResolution: NodeNext` — all internal imports must use explicit `.js` extensions.
+- `src/harness-config.ts`
+  shared typed environment/config resolution for the harness
 - `lib/`
   Next.js/server runtime modules for the chat-backed sandbox harness. Bundled by Next.js/Turbopack with `moduleResolution: Bundler` — no `.js` extensions on imports.
+- `lib/chat-harness/`
+  request parsing, context-building, and stream assembly for the chat route
+- `lib/sandbox/`
+  sandbox constants, store, bootstrap, prompt, lifecycle, and execution modules
 - `app/`
   Next.js app router UI and API routes
+- `app/components/`
+  chat UI presentation components
+- `app/hooks/`
+  client-side chat controller hooks
+- `test/`
+  first-party harness unit and UI tests
 - `src/models.ts`
   model/provider configuration
 - `lib/chat-harness.ts`
-  chat route orchestration — message filtering, tool registration, streamText
+  thin entrypoint that delegates chat route orchestration to `lib/chat-harness/`
 - `lib/sandbox-session.ts`
-  sandbox session logic for Next.js runtime
+  thin entrypoint that delegates sandbox session logic to `lib/sandbox/`
 - `app/api/chat/route.ts`
   chat endpoint returning AI SDK UI message streams
 - `app/api/chat/reset/route.ts`
@@ -77,7 +89,7 @@ Do not use this folder as a general product repo, website, or research dump.
 - the default revision is `tools` unless `HARNESS_REPO_REVISION` overrides it
 - `harness-playground/` is included in this repo as a Git submodule that tracks the `tools` branch
 - repo-local helper modules in the target repo live under `tools/`, including `tools/web_search.py` and `tools/reddit_research.py`
-- the current `harness-playground` submodule revision in this repo is `f542a52` on `tools`
+- the current `harness-playground` submodule revision in this repo is `d0888be` on `tools`
 - the Reddit helper uses unauthenticated Reddit `.json` endpoints, which may be blocked from sandbox or datacenter IP ranges even with a custom `User-Agent`
 - repo-local web search helpers currently support `exa`, `firecrawl`, and `tavily`
 
@@ -142,8 +154,10 @@ For the chat harness:
 
 - `tools.web_search.search(...)` is the stable public interface for repo-local web search
 - supported providers are `exa`, `firecrawl`, and `tavily`
-- `firecrawl` currently normalizes its provider response into a top-level `results` list
-- `exa` and `tavily` currently return their parsed native provider payloads
+- all supported web-search providers now normalize to a common top-level shape with `query`, `provider`, and `results`, plus optional fields such as `answer`, `images`, `warning`, `usage`, and `metadata`
+- callers should treat provider-specific details as optional and read them from normalized fields or `metadata`, not from legacy provider-native top-level keys
+- unsupported non-default provider parameters should fail explicitly instead of being silently ignored
+- `tools.reddit_research.discover_subreddits(...)` now accepts explicit provider selection for stable discovery behavior
 - helper interface docstrings are the source of truth for parameter and return-shape details
 - the target repo README includes backend-selection guidance for agents and should be read before using helpers
 
@@ -157,8 +171,10 @@ For the chat harness:
 
 ## Testing Notes
 
-- `harness-playground/tests/test_tools_smoke.py` provides smoke coverage for the web search helpers and Reddit research primitives
-- the smoke tests are environment-aware and may skip on missing API keys, TLS certificate issues, or Reddit sandbox blocking
+- `harness-playground/tests/test_tools_smoke.py` provides live smoke coverage for the web search helpers and Reddit research primitives
+- `harness-playground/tests/test_web_search_unit.py` and `harness-playground/tests/test_reddit_research_unit.py` provide deterministic unit coverage for normalized contracts, provider mapping, subreddit extraction, and blocked-response handling
+- the harness itself now has first-party tests under `test/` and uses `vitest`
+- harness-playground smoke tests are environment-aware and may skip on missing API keys, TLS certificate issues, or Reddit sandbox blocking
 
 ## Telemetry
 

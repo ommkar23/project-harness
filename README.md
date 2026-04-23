@@ -8,6 +8,7 @@ Chat-backed sandbox harness built with the Vercel AI SDK and Vercel Sandbox.
 git submodule update --init --recursive
 pnpm install
 cp .env.example .env
+pnpm test
 pnpm build
 pnpm lint
 pnpm dev
@@ -35,6 +36,9 @@ Current behavior:
 - the sandbox clones `HARNESS_REPO_URL`, upgrades `pip`, and installs
   `requirements.txt` when present
 - all repo interaction is intended to happen through Python running inside the sandbox
+- runtime/model config is resolved through a single typed config boundary
+- chat request parsing, context transformation, stream assembly, and sandbox lifecycle are split into focused modules
+- the repo includes Vitest coverage for config parsing, chat context shaping, sandbox lifecycle, and key chat UI behavior
 
 Before running the chat harness locally:
 
@@ -61,6 +65,16 @@ Optional variables:
 
 The chat UI also includes a reset control that clears the current conversation and stops the
 current sandbox session so the next message starts from a fresh clone.
+
+## Verification
+
+After changes, run:
+
+```bash
+pnpm test
+pnpm build
+pnpm lint
+```
 
 By default the sandbox clones the `tools` branch of the target repo, which includes the
 `tools/` Python helper modules. Override `HARNESS_REPO_REVISION` if you want a different

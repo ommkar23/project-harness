@@ -13,9 +13,13 @@ export default tseslint.config(
       'lib/**/*.ts',
       'app/**/*.ts',
       'app/**/*.tsx',
+      'test/**/*.ts',
+      'test/**/*.tsx',
       'next.config.ts',
       'instrumentation.ts',
       'instrumentation.node.ts',
+      'vitest.config.ts',
+      'vitest.setup.ts',
     ],
     languageOptions: {
       parserOptions: {

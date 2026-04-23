@@ -1,0 +1,44 @@
+{
+  "messages": [
+    {
+      "id": "user-1",
+      "role": "user",
+      "parts": [
+        {
+          "type": "text",
+          "text": "Read the README"
+        }
+      ]
+    },
+    {
+      "id": "assistant-1",
+      "role": "assistant",
+      "parts": [
+        {
+          "type": "text",
+          "text": "I will inspect it."
+        },
+        {
+          "type": "tool-executePython",
+          "toolCallId": "tool-1",
+          "state": "output-available",
+          "input": {
+            "code": "print('hi')"
+          },
+          "output": {
+            "exitCode": 0,
+            "durationMs": 21,
+            "stdout": "README",
+            "stderr": "",
+            "truncated": false
+          }
+        }
+      ]
+    }
+  ],
+  "expectedTexts": [
+    "Read the README",
+    "I will inspect it.",
+    "[executePython output]\nexitCode: 0\ndurationMs: 21\ntruncated: false\n\nstdout:\nREADME\n\nstderr:\n[empty]"
+  ]
+}
